@@ -11,13 +11,20 @@ const ALLOCATOR_BUF_SIZE = 2 * 1024 * 1024;
 const IO_BUF_SIZE = 32 * 1024;
 
 const Input = Pair([]Range, []u64);
-const Range = Pair(u64, u64);
-fn rangeLessThan(_: void, left: Range, right: Range) bool {
-    return left.@"0" < right.@"0";
-}
 fn Pair(left: type, right: type) type {
     return struct { left, right };
 }
+const Range = struct {
+    start: u64,
+    end: u64,
+    const Self = @This();
+    fn init(start: u64, end: u64) Self {
+        return Self{ .start = start, .end = end };
+    }
+    fn ordAscByStartValue(_: void, left: Self, right: Self) bool {
+        return left.start < right.start;
+    }
+};
 
 fn solve(gpa: Allocator, input: *Io.Reader, output: *Io.Writer) !void {
     const ranges, const ids = try parseInput(gpa, input);
@@ -36,7 +43,7 @@ fn part1(input: Input) u64 {
     var count: u64 = 0;
     ids: for (ids) |id|
         for (ranges) |range| {
-            if (range.@"0" <= id and id <= range.@"1") {
+            if (range.start <= id and id <= range.end) {
                 count += 1;
                 continue :ids;
             }
@@ -45,24 +52,23 @@ fn part1(input: Input) u64 {
 }
 fn part2(input: Input) u64 {
     const ranges, _ = input;
-    std.sort.block(Range, ranges, {}, rangeLessThan);
+    std.sort.block(Range, ranges, {}, Range.ordAscByStartValue);
 
     var count: u64 = 0;
 
-    var last: ?Range = null;
-    for (ranges) |range| {
-        const start, const end = range;
-        if (last) |*l|
-            if (start <= l.@"1") {
-                l.*.@"1" = @max(l.@"1", end);
-            } else {
-                count += l.@"1" - l.@"0" + 1;
-                last = range;
+    var last_range: ?Range = null;
+    for (ranges) |current| {
+        if (last_range) |*last|
+            if (current.start <= last.end) { // overlap, so we'll expand the lower range
+                last.*.end = @max(last.end, current.end);
+            } else { // no overlap, so lower range is done and can be counted
+                count += last.end - last.start + 1;
+                last_range = current;
             }
         else
-            last = range;
+            last_range = current;
     }
-    count += last.?.@"1" - last.?.@"0" + 1;
+    count += last_range.?.end - last_range.?.start + 1;
 
     return count;
 }
@@ -86,7 +92,7 @@ fn parseInput(gpa: Allocator, input: *Io.Reader) !Input {
             const start = try fmt.parseInt(u64, first, 10);
             const end = try fmt.parseInt(u64, second, 10);
 
-            try ranges.append(gpa, .{ start, end });
+            try ranges.append(gpa, Range.init(start, end));
             continue :parse .range;
         },
         .id => {
