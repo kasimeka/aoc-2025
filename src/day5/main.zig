@@ -28,7 +28,7 @@ fn solve(gpa: Allocator, input: *Io.Reader, output: *Io.Writer) !void {
 
     std.debug.print("{any}, {any}\n", .{ ranges[0], ids[0] });
     try output.print("part1: {d}\n", .{part1(.{ ranges, ids })});
-    try output.print("part1: {d}\n", .{part2(.{ ranges, ids })});
+    try output.print("part2: {d}\n", .{part2(.{ ranges, ids })});
     try output.flush();
 }
 fn part1(input: Input) u64 {
