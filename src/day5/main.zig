@@ -11,7 +11,7 @@ const ALLOCATOR_BUF_SIZE = 2 * 1024 * 1024;
 const IO_BUF_SIZE = 32 * 1024;
 
 const Input = Pair([]Range, []u64);
-const Range = struct { u64, u64 };
+const Range = Pair(u64, u64);
 fn rangeLessThan(_: void, left: Range, right: Range) bool {
     return left.@"0" < right.@"0";
 }
@@ -52,14 +52,15 @@ fn part2(input: Input) u64 {
     var last: ?Range = null;
     for (ranges) |range| {
         const start, const end = range;
-        if (last == null) {
+        if (last) |*l|
+            if (start <= l.@"1") {
+                l.*.@"1" = @max(l.@"1", end);
+            } else {
+                count += l.@"1" - l.@"0" + 1;
+                last = range;
+            }
+        else
             last = range;
-        } else if (start <= last.?.@"1") {
-            last.?.@"1" = @max(last.?.@"1", end);
-        } else {
-            count += last.?.@"1" - last.?.@"0" + 1;
-            last = range;
-        }
     }
     count += last.?.@"1" - last.?.@"0" + 1;
 
