@@ -56,19 +56,16 @@ fn part2(input: Input) u64 {
 
     var count: u64 = 0;
 
-    var last_range: ?Range = null;
-    for (ranges) |current| {
-        if (last_range) |*last|
-            if (current.start <= last.end) { // overlap, so we'll expand the lower range
-                last.*.end = @max(last.end, current.end);
-            } else { // no overlap, so lower range is done and can be counted
-                count += last.end - last.start + 1;
-                last_range = current;
-            }
-        else
-            last_range = current;
+    var last: Range = ranges[0];
+    for (ranges[1..]) |current| {
+        if (current.start <= last.end) { // overlap, so we'll expand the lower range
+            last.end = @max(last.end, current.end);
+        } else { // no overlap, so lower range is done and can be counted
+            count += last.end - last.start + 1;
+            last = current;
+        }
     }
-    count += last_range.?.end - last_range.?.start + 1;
+    count += last.end - last.start + 1;
 
     return count;
 }
