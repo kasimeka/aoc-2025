@@ -1,9 +1,6 @@
 const std = @import("std");
 const fmt = std.fmt;
-const math = std.math;
-const mem = std.mem;
-const sort = std.sort;
-const Allocator = mem.Allocator;
+const Allocator = std.mem.Allocator;
 const ArrayList = std.ArrayList;
 const Io = std.Io;
 
@@ -82,7 +79,7 @@ fn parseInput(gpa: Allocator, input: *Io.Reader) !Input {
             const line = try input.takeDelimiterExclusive('\n');
             input.toss(1);
 
-            var lineParts = mem.splitScalar(u8, line, '-');
+            var lineParts = std.mem.splitScalar(u8, line, '-');
             const first = lineParts.next().?;
             const second = lineParts.next() orelse continue :parse .id;
 
