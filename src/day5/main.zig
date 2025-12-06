@@ -94,10 +94,12 @@ fn parseInput(gpa: Allocator, input: *Io.Reader) !Input {
                 error.EndOfStream => return .{ try ranges.toOwnedSlice(gpa), try ids.toOwnedSlice(gpa) },
                 else => return e,
             };
+            input.toss(1);
+
             const id = try fmt.parseInt(u64, line, 10);
 
             try ids.append(gpa, id);
-            continue :parse .range;
+            continue :parse .id;
         },
     }
 }
